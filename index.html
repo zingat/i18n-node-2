@@ -1,0 +1,239 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>I18n-node by mashpie</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>I18n-node</h1>
+        <p>Lightweight simple translation module for node.js / express.js with dynamic json storage. Uses common __('...') syntax in app and templates.</p>
+
+        <p class="view"><a href="https://github.com/mashpie/i18n-node">View the Project on GitHub <small>mashpie/i18n-node</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/mashpie/i18n-node/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/mashpie/i18n-node/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/mashpie/i18n-node">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>i18n</h1>
+
+<p>Lightweight simple translation module with dynamic json storage. 
+Uses common __('...') syntax in app and templates.
+Stores language files in json files compatible to <a href="http://webtranslateit.com/">webtranslateit</a> json format.
+Adds new strings on-the-fly when first used in your app.
+No extra parsing needed.</p>
+
+<p><a href="http://travis-ci.org/mashpie/i18n-node"><img src="https://secure.travis-ci.org/mashpie/i18n-node.png?branch=master" alt="Build Status"></a></p>
+
+<h2>Install</h2>
+
+<pre><code>npm install i18n
+</code></pre>
+
+<h2>Test</h2>
+
+<pre><code>npm test
+</code></pre>
+
+<h2>Load</h2>
+
+<p>in your app.js</p>
+
+<pre><code>// load modules
+var express = require('express'),
+    i18n = require("i18n");
+</code></pre>
+
+<p>now you are ready to use <code>i18n.__('Hello')</code>.</p>
+
+<h2>Configure</h2>
+
+<p>use configure to setup these:</p>
+
+<pre><code>i18n.configure({
+    // setup some locales - other locales default to en silently
+    locales:['en', 'de'],
+
+    // where to register __() and __n() to, might be "global" if you know what you are doing
+    register: global
+});
+</code></pre>
+
+<p><strong>CAREFULL:</strong> as jade uses <code>__</code> as internal variable you need to register view helpers tweaked to your needs when used with jade.</p>
+
+<h3>tweak helpers</h3>
+
+<p>configure i18n without register: global</p>
+
+<pre><code>i18n.configure({
+    // setup some locales - other locales default to en silently
+    locales:['en', 'de'],
+});
+</code></pre>
+
+<p>and register view helpers on your own</p>
+
+<pre><code>// register helpers for use in templates
+app.helpers({
+  __i: i18n.__,
+  __n: i18n.__n
+});
+</code></pre>
+
+<h3>hook into express configure</h3>
+
+<p>in an express app, you might use i18n.init to gather language settings of your visitors, ie:</p>
+
+<pre><code>// Configuration
+app.configure(function() {
+
+    [...]
+
+    // using 'accept-language' header to guess language settings
+    app.use(i18n.init);
+    app.use(app.router);
+    app.use(express.static(__dirname + '/public'));
+});
+</code></pre>
+
+<h2>Use</h2>
+
+<p>in your app</p>
+
+<pre><code>var greeting = __('Hello');
+</code></pre>
+
+<p>in your template (depending on your template compiler)</p>
+
+<pre><code>&lt;%= __('Hello') %&gt;
+
+${__('Hello')}
+</code></pre>
+
+<h3>sprintf support</h3>
+
+<pre><code>var greeting = __('Hello %s, how are you today?', 'Marcus');
+</code></pre>
+
+<p>this puts <strong>Hello Marcus, how are you today?</strong>. You might add endless arguments and even nest it.</p>
+
+<pre><code>var greeting = __('Hello %s, how are you today? How was your %s.', 'Marcus', __('weekend'));
+</code></pre>
+
+<p>which puts <strong>Hello Marcus, how are you today? How was your weekend.</strong></p>
+
+<h3>variable support</h3>
+
+<p>you might even use dynamic variables. They get added to the <code>en.js</code> file if not yet existing.</p>
+
+<pre><code>var greetings = ['Hi', 'Hello', 'Howdy'];        
+for (var i=0; i &lt; greetings.length; i++) {
+    console.log( __(greetings[i]) );
+};
+</code></pre>
+
+<p>which puts </p>
+
+<pre><code>Hi
+Hello
+Howdy
+</code></pre>
+
+<h3>plural support</h3>
+
+<p>different plural froms are supported as response to <code>count</code>:</p>
+
+<pre><code>var singular = __n('%s cat', '%s cats', 1);
+var plural = __n('%s cat', '%s cats', 3);
+</code></pre>
+
+<p>this puts <strong>1 cat</strong> or <strong>3 cats</strong>
+and again these could get nested:</p>
+
+<pre><code>var singular = __n('There is one monkey in the %%s', 'There are %d monkeys in the %%s', 1, 'tree');
+var plural = __n('There is one monkey in the %%s', 'There are %d monkeys in the %%s', 3, 'tree');
+</code></pre>
+
+<p>putting <strong>There is one monkey in the tree</strong> or <strong>There are 3 monkeys in the tree</strong></p>
+
+<h2>Storage</h2>
+
+<h3>json file</h3>
+
+<p>the above will automatically generate a <code>en.js</code> by default inside <code>./locales/</code> which looks like</p>
+
+<pre><code>{
+    "Hello": "Hello",
+    "Hello %s, how are you today?": "Hello %s, how are you today?",
+    "weekend": "weekend",
+    "Hello %s, how are you today? How was your %s.": "Hello %s, how are you today? How was your %s.",
+    "Hi": "Hi",
+    "Howdy": "Howdy",
+    "%s cat": {
+        "one": "%s cat",
+        "other": "%s cats"
+    },
+    "There is one monkey in the %%s": {
+        "one": "There is one monkey in the %%s",
+        "other": "There are %d monkeys in the %%s"
+    },
+    "tree": "tree"
+}
+</code></pre>
+
+<p>that file can be edited or just uploaded to <a href="http://docs.webtranslateit.com/file_formats/">webtranslateit</a> for any kind of collaborative translation workflow:</p>
+
+<pre><code>{
+    "Hello": "Hallo",
+    "Hello %s, how are you today?": "Hallo %s, wie geht es dir heute?",
+    "weekend": "Wochenende",
+    "Hello %s, how are you today? How was your %s.": "Hallo %s, wie geht es dir heute? Wie war dein %s.",
+    "Hi": "Hi",
+    "Howdy": "Hallöchen",
+    "%s cat": {
+        "one": "%s Katze",
+        "other": "%s Katzen"
+    },
+    "There is one monkey in the %%s": {
+        "one": "Im %%s sitzt ein Affe",
+        "other": "Im Baum sitzen %d Affen"
+    },
+    "tree": "Baum"
+}
+</code></pre>
+
+<h2>Changelog</h2>
+
+<ul>
+<li>0.3.5: fixed some issues, prepared refactoring, prepared publishing to npm finally</li>
+<li>0.3.4: merged pull request #13 from Fuitad/master and updated README</li>
+<li>0.3.3: merged pull request from codders/master and modified for backward compatibility. Usage and tests pending</li>
+<li>0.3.2: merged pull request #7 from carlptr/master and added tests, modified fswrite to do sync writes</li>
+<li>0.3.0: added configure and init with express support (calling guessLanguage() via 'accept-language')</li>
+<li>0.2.0: added plurals</li>
+<li>0.1.0: added tests</li>
+<li>0.0.1: start </li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/mashpie">mashpie</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
