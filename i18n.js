@@ -101,10 +101,10 @@ i18n.expressBind = function (app, opt) {
 	if (!app) {
 		return;
 	}
-
+	var newi18n = new i18n(opt);
 	app.use(function (req, res, next) {
 		opt.request = req;
-		req.i18n = new i18n(opt);
+		req.i18n = newi18n;
 
 		// Express 3
 		if (res.locals) {
